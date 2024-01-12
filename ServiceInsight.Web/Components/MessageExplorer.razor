@@ -26,10 +26,10 @@
             <FlowView Message="Message" IsVisible="@(CurrentView == "flow")"></FlowView>
         </div>
         <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "saga" ? "" : "d-none")">
-            TODO - Not sure how to render yet
+            <SagaView Message="Message" IsVisible="@(CurrentView == "saga")"></SagaView>
         </div>
         <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "sequence" ? "" : "d-none")">
-            TODO - Not sure how to render yet
+            <SequenceView Message="Message" IsVisible="@(CurrentView == "sequence")"></SequenceView>
         </div>
         <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "headers" ? "" : "d-none")">
             <HeadersView Message="Message"></HeadersView>

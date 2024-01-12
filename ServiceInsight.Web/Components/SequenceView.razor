@@ -1,0 +1,77 @@
+@using ServiceInsight.Web.Model
+@using ServiceInsight.Web.Services
+<h3><i class="bi-bezier2"></i> Sequence Diagram</h3>
+<div id="sequence-graph">
+</div>
+@code {
+    
+    [Inject]
+    private IServiceControlClientFactory _clientFactory { get; set; }
+    
+    [Inject]
+    private IJSRuntime _js { get; set; }
+    
+    [Parameter]
+    public MessageInfo Message { get; set; }
+    
+    [Parameter]
+    public bool IsVisible { get; set; }
+    
+    
+    private string _currentMessageID;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+         if (_currentMessageID != Message?.MessageID && IsVisible)
+         {
+             _currentMessageID = Message.MessageID;
+             var client = _clientFactory.GetClient(Message.Environment);
+             var conversation = await client.GetConversation(Message.ConversationID);
+             var diagram = "%%{init: { \"sequence\": { " +
+                           "\"wrap\": true, " +
+                           "\"messageAlign\": \"left\",  " +
+                           "\"rightAngles\": true, " +
+                           "\"mirrorActors\": false } } }%%" +
+                           "\nsequenceDiagram\n";
+             //var diagram = "sequenceDiagram\n";
+             var participants = new List<string>();
+             var relations = new List<string>();
+             foreach (var msg in conversation)
+             {
+                 diagram += $"{msg.SendingEndpoint.Name}-->>{msg.ReceivingEndpoint.Name}: {msg.MessageType}\n";
+                 // if (!participants.Contains(msg.SendingEndpoint.Name))
+                 //     participants.Add(msg.SendingEndpoint.Name);
+                 // if (!participants.Contains(msg.ReceivingEndpoint.Name))
+                 //     participants.Add(msg.ReceivingEndpoint.Name);
+                 // diagram += $"\t{msg.MessageType}\n";
+                 // var relatedToMessageID = msg.Headers.FirstOrDefault(x => x.Key == "NServiceBus.RelatedTo")?.Value;
+                 // if (!string.IsNullOrEmpty(relatedToMessageID))
+                 // {
+                 //     var ogMessage = conversation.FirstOrDefault(m => m.MessageID == relatedToMessageID);
+                 //     if (ogMessage != null)
+                 //     {
+                 //         relations.Add($"{ogMessage.MessageType } --> {msg.MessageType}");
+                 //     }
+                 // }
+             }
+             // foreach (var participant in participants)
+             // {
+             //     diagram += $"\tparticipant {participant}\n";
+             // }
+             // foreach (var relation in relations)
+             // {
+             //     diagram += $"\t{relation}\n";
+             // }
+             await _js.InvokeVoidAsync("ReRenderGraph", "sequence-graph", diagram);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // if (!firstRender)
+        // {
+        //     await _js.InvokeVoidAsync("ReRenderGraph", "flow-graph");
+        // }
+    }
+
+}
