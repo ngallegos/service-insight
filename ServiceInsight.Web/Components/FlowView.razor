@@ -49,13 +49,4 @@
             await _js.InvokeVoidAsync("ReRenderGraph", "flow-graph", chartDef);
         }
     }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        // if (!firstRender)
-        // {
-        //     await _js.InvokeVoidAsync("ReRenderGraph", "flow-graph");
-        // }
-    }
-
 }

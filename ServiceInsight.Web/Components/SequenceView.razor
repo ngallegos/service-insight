@@ -28,50 +28,26 @@
              var client = _clientFactory.GetClient(Message.Environment);
              var conversation = await client.GetConversation(Message.ConversationID);
              var diagram = "%%{init: { \"sequence\": { " +
-                           "\"wrap\": true, " +
+                           "\"wrap\": false, " +
                            "\"messageAlign\": \"left\",  " +
                            "\"rightAngles\": true, " +
                            "\"mirrorActors\": false } } }%%" +
                            "\nsequenceDiagram\n";
-             //var diagram = "sequenceDiagram\n";
-             var participants = new List<string>();
-             var relations = new List<string>();
+             var activatedEndpoint = "";
              foreach (var msg in conversation)
              {
-                 diagram += $"{msg.SendingEndpoint.Name}-->>{msg.ReceivingEndpoint.Name}: {msg.MessageType}\n";
-                 // if (!participants.Contains(msg.SendingEndpoint.Name))
-                 //     participants.Add(msg.SendingEndpoint.Name);
-                 // if (!participants.Contains(msg.ReceivingEndpoint.Name))
-                 //     participants.Add(msg.ReceivingEndpoint.Name);
-                 // diagram += $"\t{msg.MessageType}\n";
-                 // var relatedToMessageID = msg.Headers.FirstOrDefault(x => x.Key == "NServiceBus.RelatedTo")?.Value;
-                 // if (!string.IsNullOrEmpty(relatedToMessageID))
-                 // {
-                 //     var ogMessage = conversation.FirstOrDefault(m => m.MessageID == relatedToMessageID);
-                 //     if (ogMessage != null)
-                 //     {
-                 //         relations.Add($"{ogMessage.MessageType } --> {msg.MessageType}");
-                 //     }
-                 // }
+                 diagram += $"\t{msg.SendingEndpoint.Name}-->>{msg.ReceivingEndpoint.Name}: {msg.MessageType}\n";
+                 if (msg.ReceivingEndpoint.Name != activatedEndpoint)
+                 {
+                     if (activatedEndpoint != string.Empty)
+                         diagram += $"\tdeactivate {activatedEndpoint}\n";
+                     activatedEndpoint = msg.ReceivingEndpoint.Name;
+                     diagram += $"\tactivate {activatedEndpoint}\n";
+                 }
              }
-             // foreach (var participant in participants)
-             // {
-             //     diagram += $"\tparticipant {participant}\n";
-             // }
-             // foreach (var relation in relations)
-             // {
-             //     diagram += $"\t{relation}\n";
-             // }
+             if (activatedEndpoint != string.Empty)
+                 diagram += $"\tdeactivate {activatedEndpoint}\n";
              await _js.InvokeVoidAsync("ReRenderGraph", "sequence-graph", diagram);
         }
     }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        // if (!firstRender)
-        // {
-        //     await _js.InvokeVoidAsync("ReRenderGraph", "flow-graph");
-        // }
-    }
-
 }

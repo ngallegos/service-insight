@@ -71,7 +71,7 @@ public class ServiceControlClient : IServiceControlClient
     public async Task<List<MessageInfo>> GetConversation(string conversationID)
     {
         var messages = await _client.GetFromJsonAsync<List<MessageInfo>>($"conversations/{conversationID}");
-        return messages;
+        return messages.OrderBy(x => x.TimeSent).ToList();
     }
 
     public async Task<SagaDetail> GetSaga(string sagaID)

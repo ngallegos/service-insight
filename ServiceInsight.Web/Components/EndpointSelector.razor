@@ -1,6 +1,6 @@
 ﻿@using ServiceInsight.Web.Model
 @using ServiceInsight.Web.Services
-<nav id="sidebarMenu" class="@NavClasses bg-dark sidebar @NavMenuCssClass" style="height: 100vh;">
+<nav id="sidebarMenu" class="@NavClasses bg-dark sidebar @NavMenuCssClass" style="height: 100vh; overflow-y: auto; overflow-x: hidden;">
   <div class="position-sticky pt-3 sidebar-sticky">
       @foreach (var env in _endpoints)
       {
