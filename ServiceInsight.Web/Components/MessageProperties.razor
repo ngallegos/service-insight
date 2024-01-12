@@ -8,10 +8,10 @@
       <table class="table table-bordered table-striped table-hover table-sm">
         <tbody>
         <tr>
-          <td><i class="bi-caret-right-fill"></i>General</td>
+          <td @onclick="@(() => _toggles["general"] = !_toggles["general"])"><i class="bi-caret-@(_toggles["general"] ? "down": "right")-fill"></i> General</td>
           <td></td>
         </tr>
-        <tr>
+        <tr class="@(_toggles["general"] ? "" : "d-none")">
           <td colspan="2">
             <table class="table mb-0">
               <tbody>
@@ -31,11 +31,11 @@
           </td>
         </tr>
         <tr>
-          <td><i class="bi-caret-right-fill"></i>Performance</td>
+          <td @onclick="@(() => _toggles["perf"] = !_toggles["perf"])"><i class="bi-caret-@(_toggles["perf"] ? "down": "right")-fill"></i> Performance</td>
           <td></td>
         </tr>
         
-        <tr>
+        <tr class="@(_toggles["perf"] ? "" : "d-none")">
           <td colspan="2">
             <table class="table mb-0">
               <tbody>
@@ -51,11 +51,11 @@
           </td>
         </tr>
         <tr>
-          <td><i class="bi-caret-right-fill"></i>Errors</td>
+          <td @onclick="@(() => _toggles["err"] = !_toggles["err"])"><i class="bi-caret-@(_toggles["err"] ? "down": "right")-fill"></i> Errors</td>
           <td></td>
         </tr>
         
-        <tr>
+        <tr class="@(_toggles["err"] ? "" : "d-none")">
           <td colspan="2">
             <table class="table mb-0">
               <tbody>
@@ -84,11 +84,11 @@
           </td>
         </tr>
         <tr>
-          <td><i class="bi-caret-right-fill"></i>Gateway</td>
+          <td @onclick="@(() => _toggles["gate"] = !_toggles["gate"])"><i class="bi-caret-@(_toggles["gate"] ? "down": "right")-fill"></i> Gateway</td>
           <td></td>
         </tr>
         
-        <tr>
+        <tr class="@(_toggles["gate"] ? "" : "d-none")">
           <td colspan="2">
             <table class="table mb-0">
               <tbody>
@@ -104,11 +104,11 @@
           </td>
         </tr>
         <tr>
-          <td><i class="bi-caret-right-fill"></i>Saga</td>
+          <td @onclick="@(() => _toggles["saga"] = !_toggles["saga"])"><i class="bi-caret-@(_toggles["saga"] ? "down": "right")-fill"></i> Saga</td>
           <td></td>
         </tr>
         
-        <tr>
+        <tr class="@(_toggles["saga"] ? "" : "d-none")">
           <td colspan="2">
             <table class="table mb-0">
               <tbody>
@@ -133,6 +133,15 @@
   [Parameter]
   public MessageInfo Message { get; set; }
 
+  private Dictionary<string, bool> _toggles = new Dictionary<string, bool>
+  {
+    { "general", false },
+    { "perf", false },
+    { "err", false },
+    { "gate", false },
+    { "saga", false },
+  };
+
   private string[] _generalPropKeys = new[]
   {
     "NServiceBus.Version",
@@ -143,6 +152,40 @@
     "NServiceBus.IsDeferedMessage",
     "NServiceBus.ConversationId",
   };
+  
+  private string[] _perfPropKeys = new[]
+  {
+    "NServiceBus.TimeSent",
+    "NServiceBus.ProcessingStarted",
+    "NServiceBus.ProcessingEnded"
+  };
+  
+  private string[] _errPropKeys = new[]
+  {
+    "NServiceBus.ExceptionInfo",
+    "NServiceBus.FailedQ",
+    "NServiceBus.TimeOfFailure",
+  };
+  
+  private string[] _gatePropKeys = new[]
+  {
+    "NServiceBus.Gateway.From",
+    "NServiceBus.Gateway.To",
+    "NServiceBus.Gateway.DestinationSites",
+    "NServiceBus.Gateway.OriginatingSite",
+    "NServiceBus.Gateway.RoutTo"
+  };
+  
+  private string[] _sagaPropKeys = new[]
+  {
+    "NServiceBus.SagaType",
+    "NServiceBus.SagaDataType",
+    "NServiceBus.OriginatingSagaId",
+    "NServiceBus.OriginatingSagaType",
+    "NServiceBus.IsSagaTimeoutMessage",
+    "NServiceBus.SagaId"
+  };
+}
   
   private string[] _perfPropKeys = new[]
   {
