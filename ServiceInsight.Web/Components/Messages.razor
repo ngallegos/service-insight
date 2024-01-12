@@ -1,0 +1,71 @@
+@using ServiceInsight.Web.Model
+@using ServiceInsight.Web.Services
+
+
+<h1 class="@(searching ? "" : "d-none")">Searching</h1>
+<div class="table-responsive @(searching ? "d-none" : "")">
+  <table class="table table-striped table-sm">
+    <thead>
+      <tr>
+        <th scope="col">Status</th>
+        <th scope="col">ID</th>
+        <th scope="col">Type</th>
+        <th scope="col">Time Sent</th>
+        <th scope="col">Delivery Time</th>
+        <th scope="col">Procesing Time</th>
+        <th scope="col">Critical Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      @foreach (var message in _messages)
+      {
+        <tr>
+          <td>@message.Status</td>
+          <td>@message.MessageID</td>
+          <td>@message.MessageType.Split('.').Last()</td>
+          <td>@message.TimeSent.ToOffset(userOffset)</td>
+          <td>@message.DeliveryTime</td>
+          <td>@message.ProcessingTime</td>
+          <td>@message.CriticalTime</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@code {
+
+  private bool searching = false;
+  private List<MessageInfo> _messages = new List<MessageInfo>();
+  private TimeSpan userOffset;
+  
+  [Inject]
+  private IServiceControlClientFactory _clientFactory { get; set; }
+  
+  [Inject]
+  private IJSRuntime _js { get; set; }
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (firstRender)
+    {
+      var timeDiff = await _js.InvokeAsync<int>("GetTimeZoneValue");
+      userOffset = TimeSpan.FromMinutes(-timeDiff);
+    }
+  }
+
+  public async Task SearchMessages(string environment, EndpointInfo endpoint = null)
+  {
+    searching = true;
+    StateHasChanged();
+    var clients = new List<IServiceControlClient> { _clientFactory.GetClient(environment) };
+
+    var messageTasks = clients.Select(x => x.SearchMessages(endpoint: endpoint?.Name));
+
+    _messages = (await Task.WhenAll(messageTasks)).SelectMany(x => x)
+      .OrderByDescending(x => x.TimeSent)
+      .ToList();
+    searching = false;
+    StateHasChanged();
+  }
+}

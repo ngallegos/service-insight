@@ -1,34 +1,9 @@
-﻿@using ServiceInsight.Web.Model
-@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase
 
 <PageTitle>ServiceInsight.Web</PageTitle>
 
 <div class="container-fluid">
     <div class="row">
-        <NavMenu NavClasses="col-md-3 col-lg-2 d-md-block" EndpointSelected="@RefreshMessages"/>
-
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <h1>@CurrentEndpoint</h1>
-            <div class="top-row px-4">
-                <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-            </div>
-
-            <article class="content px-4">
-                @Body
-            </article>
-        </main>
+        @Body
     </div>
 </div>
-
-@code
-{
-    private string CurrentEndpoint = "";
-    private async Task RefreshMessages(EndpointInfo endpoint)
-    {
-        if (CurrentEndpoint != endpoint.Name)
-        {
-            
-            CurrentEndpoint = endpoint.Name;
-        }
-    }
-}

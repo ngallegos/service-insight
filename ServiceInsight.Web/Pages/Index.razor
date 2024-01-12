@@ -1,9 +1,31 @@
 ﻿@page "/"
+@using ServiceInsight.Web.Components
+@using ServiceInsight.Web.Model
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<EndpointSelector NavClasses="col-md-3 col-lg-2 d-md-block" EndPointSelected="@RefreshMessages"></EndpointSelector>
 
-Welcome to your new app.
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <h1>@CurrentEndpoint</h1>
+    <Messages @ref="_messagesComponent"></Messages>
+</main>
 
-<SurveyPrompt Title="How is Blazor working for you?"/>
+@code
+{
+    private string CurrentEndpoint = "";
+    private Messages _messagesComponent;
+    private async Task RefreshMessages(EndpointInfo endpoint)
+    {
+        if (CurrentEndpoint != endpoint.Name)
+        {
+            await _messagesComponent.SearchMessages(endpoint.Name, endpoint);
+            CurrentEndpoint = endpoint.Name;
+        }
+        else
+        {
+            await _messagesComponent.SearchMessages(endpoint.Name);
+            CurrentEndpoint = null;
+        }
+    }
+}
