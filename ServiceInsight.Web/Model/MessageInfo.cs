@@ -19,7 +19,7 @@ public class MessageInfo
     [JsonPropertyName("processed_at")]
     public DateTimeOffset ProcessedAt { get; set; }
     [JsonPropertyName("critical_time")]
-    public string CriticalTime { get; set; }
+    public TimeSpan CriticalTime { get; set; }
     [JsonPropertyName("processing_time")]
     public TimeSpan ProcessingTime { get; set; }
     [JsonPropertyName("delivery_time")]

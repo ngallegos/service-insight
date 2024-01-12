@@ -1,3 +1,4 @@
+using System.Web;
 using Microsoft.Extensions.Options;
 using ServiceInsight.Web.Model;
 
@@ -6,6 +7,12 @@ namespace ServiceInsight.Web.Services;
 public interface IServiceControlClient
 {
     Task<List<EndpointInfo>> GetMonitoredEndpoints();
+    Task<List<MessageInfo>> SearchMessages(string keyword = null, string endpoint = null,
+        int page = 1, int perPage = 25,
+        string direction = "desc",
+        string sort = "time_sent");
+
+    Task<string> GetMessageBody(string bodyUrl);
 }
 
 public class ServiceControlClient : IServiceControlClient
@@ -21,6 +28,28 @@ public class ServiceControlClient : IServiceControlClient
     {
         var endpoints = await _client.GetFromJsonAsync<List<EndpointInfo>>("endpoints");
         return endpoints.Where(x => x.Monitored).ToList();
+    }
+    
+    public async Task<List<MessageInfo>> SearchMessages(string keyword = null, string endpoint = null, 
+        int page = 1, int perPage = 25,
+        string direction = "desc",
+        string sort = "time_sent")
+    {
+        keyword = HttpUtility.UrlEncode(keyword);
+        var uri = "messages";
+        if (!string.IsNullOrEmpty(keyword))
+            uri += $"/search/{keyword}";
+        uri += $"?page={page}&per_page={perPage}&direction={direction}&sort={sort}";
+        if (!string.IsNullOrEmpty(endpoint))
+            uri = $"endpoints/{endpoint}/" + uri;
+        var messages = await _client.GetFromJsonAsync<List<MessageInfo>>(uri);
+
+        return messages;
+    }
+
+    public async Task<string> GetMessageBody(string bodyUrl)
+    {
+        return await _client.GetStringAsync(bodyUrl.TrimStart('/'));
     }
 }
 
