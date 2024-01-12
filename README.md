@@ -4,9 +4,17 @@ This is a Blazor app that can be used in place of the [windows-only Particular.n
 The api endpoints used were discovered by the doing a GET on a running service control instance's root (`http://{your-service-control-domain}:{your-service-control-port}/api/`), which returns a payload with many of the api endpoints used by service insight, and by referencing the official [service insight source code](https://github.com/Particular/ServiceInsight).
 
 ### Running the app
+Make sure you have [dotnet 6 (or higher)](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) installed
+
 You will need an instance of [service control](https://docs.particular.net/servicecontrol/) running so you can update the appsettings.json file to point to its api endpoint.  Ideally you have some messages to view or this app won't show much.
 
-Once you've updated the appsettings file with all the service control environments you want to view just run the app.
+Once you've updated the appsettings file with all the service control environments you want to view, run the app:
+
+```bash
+dotnet run --project ServiceInsight.Web
+```
+
+If a browser doesn't open automatically, navigate to `http://localhost:5114` in your browser of choice.
 
 ### Known limitations
 * Viewing the logs when inspecting a message is not available
