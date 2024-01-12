@@ -1,4 +1,3 @@
-using ServiceInsight.Web.Data;
 using ServiceInsight.Web.Model;
 using ServiceInsight.Web.Services;
 
@@ -8,7 +7,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<ServiceControlConfiguration>(builder.Configuration.GetSection("ServiceControl"));
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IServiceControlClientFactory, ServiceControlClientFactory>();
 builder.WebHost.UseWebRoot("wwwroot").UseStaticWebAssets();

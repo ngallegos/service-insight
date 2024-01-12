@@ -1,5 +1,4 @@
 ﻿@page "/"
-@using ServiceInsight.Web.Components
 @using ServiceInsight.Web.Model
 
 <PageTitle>Index</PageTitle>
@@ -9,6 +8,16 @@
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
     <h1>@CurrentEndpoint</h1>
     <Messages @ref="_messagesComponent"></Messages>
+        <div class="container-fluid pt-3 mx-0 px-0" style="height: 49vh;">
+            <div class="row" style="height: 90%;">
+                <div class="col-md-7 ms-sm-auto col-lg-9 px-md-4 border-1">
+                    <MessageExplorer></MessageExplorer>
+                </div>
+                <div class="col-md-5 col-lg-3 d-md-block border-1">
+                    <MessageProperties></MessageProperties>
+                </div>
+            </div>
+        </div>
 </main>
 
 @code
