@@ -4,8 +4,34 @@
 
 
 <div class="row">
-  <div class="col-sm-6">todo- pagination here</div>
   <div class="col-sm-2"><span class="@(searching ? "" : "d-none")">Searching @searchMessage</span></div>
+  <div class="col-sm-6">
+    <nav class="@(showPagination ? "" : "d-none")" aria-label="Page navigation example">
+      <ul class="pagination justify-content-end">
+        <li class="page-item @(Page > 1 ? "" : "disabled")">
+          <a class="page-link" href="#" @onclick="() => SetPage(Page - 1)" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+        @foreach (var pageNum in Pages)
+        {
+          if (pageNum == Page)
+          {
+            <li class="page-item active"><span class="page-link">@pageNum</span></li>
+          }
+          else
+          {
+            <li class="page-item"><a class="page-link" @onclick="() => SetPage(pageNum)" href="#">@pageNum</a></li>
+          }
+        }
+        <li class="page-item @(_messages.Count < MessagesPerPage ? "disabled" : "")">
+          <a class="page-link" href="#" @onclick="() => SetPage(Page + 1)" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
   <div class="col-sm-4">
     <div class="input-group">
       <input type="text" class="form-control" placeholder="search..." @bind="SearchQuery"
@@ -25,7 +51,7 @@
         <th scope="col">Type</th>
         <th scope="col">Time Sent</th>
         <th scope="col">Delivery Time</th>
-        <th scope="col">Procesing Time</th>
+        <th scope="col">Processing Time</th>
         <th scope="col">Critical Time</th>
       </tr>
     </thead>
@@ -78,7 +104,20 @@
   private TimeSpan userOffset;
   private string _currentEnvironment;
   private EndpointInfo _currentEndpoint;
-  
+  private bool showPagination => _messages.Count > 0 || Page > 1;
+  private int Page { get; set; } = 1;
+  private int MessagesPerPage { get; set; } = 25;
+  private List<int> Pages {
+    get
+    {
+      var paginationPages = 5;
+      var start = Math.Max(1, Page - (int)Math.Floor(paginationPages / 2.0));
+      var pages = Enumerable.Range(start, paginationPages).ToList();
+      if (_messages.Count < MessagesPerPage)
+        pages = pages.Where(p => p <= Page).ToList();
+      return pages;
+    }
+  }
 
   private string SearchQuery { get; set; }
   
@@ -108,7 +147,11 @@
       searchMessage = "";
     }
   }
-
+  private async Task SetPage(int page)
+  {
+    Page = page;
+    await SearchMessages(_currentEnvironment, _currentEndpoint, SearchQuery);
+  }
   public async Task SearchMessages(string environment, EndpointInfo endpoint = null, string searchQuery = null)
   {
     searching = true;
@@ -118,7 +161,7 @@
     StateHasChanged();
     var clients = new List<IServiceControlClient> { _clientFactory.GetClient(environment) };
 
-    var messageTasks = clients.Select(x => x.SearchMessages(keyword: searchQuery, endpoint: endpoint?.Name));
+    var messageTasks = clients.Select(x => x.SearchMessages(keyword: searchQuery, endpoint: endpoint?.Name, page: Page));
 
     _messages = (await Task.WhenAll(messageTasks)).SelectMany(x => x)
       .OrderByDescending(x => x.TimeSent)
