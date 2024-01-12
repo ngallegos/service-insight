@@ -1,26 +1,58 @@
-<div class="container-fluid" style="height: 100%;">
-    show stuff here
-</div>
-<ul class="nav nav-pills" style="height: 5%;">
-    <li class="nav-item">
-        <a class="nav-link active" aria-current="page" href="#">Flow Diagram</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">Saga</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">Sequence Diagram</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">Headers</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">Body</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" href="#">Logs</a>
-    </li>
-</ul>
+@using ServiceInsight.Web.Model
+@if (Message != null)
+{
+    <div class="container-fluid" style="height: 100%;">
+        @switch (CurrentView)
+        {
+            case "flow":
+                break;
+            case "saga":
+                break;
+            case "sequence":
+                break;
+            case "headers":
+                <HeadersView Message="Message"></HeadersView>
+                break;
+            case "body":
+                <BodyView Message="Message" @ref="_bodyView"></BodyView>
+                break;
+            case "logs":
+                break;
+        }
+    </div>
+    <ul class="nav nav-pills" style="height: 5%;">
+        <li class="nav-item" @onclick="@(() => SetCurrentView("flow"))">
+            <a class="nav-link @(CurrentView == "flow" ? "active" : "")" aria-current="page" href="#"><i class="bi-diagram-2"></i> Flow Diagram</a>
+        </li>
+        <li class="nav-item" @onclick="@(() => SetCurrentView("saga"))">
+            <a class="nav-link @(CurrentView == "saga" ? "active" : "")" href="#"><i class="bi-shuffle"></i> Saga</a>
+        </li>
+        <li class="nav-item" @onclick="@(() => SetCurrentView("sequence"))">
+            <a class="nav-link @(CurrentView == "sequence" ? "active" : "")" href="#"><i class="bi-bezier2"></i> Sequence Diagram</a>
+        </li>
+        <li class="nav-item" @onclick="@(() => SetCurrentView("headers"))">
+            <a class="nav-link @(CurrentView == "headers" ? "active" : "")" href="#"><i class="bi-list-columns-reverse"></i> Headers</a>
+        </li>
+        <li class="nav-item" @onclick="@(() => SetCurrentView("body"))">
+            <a class="nav-link @(CurrentView == "body" ? "active" : "")" href="#"><i class="bi-code-slash"></i> Body</a>
+        </li>
+        <li class="nav-item" @onclick="@(() => SetCurrentView("logs"))">
+            <a class="nav-link @(CurrentView == "logs" ? "active" : "")" href="#"><i class="bi-book"></i> Logs</a>
+        </li>
+    </ul>
+}
 @code {
-    
+
+    private BodyView _bodyView;
+    private string CurrentView = "body";
+
+    [Parameter]
+    public MessageInfo Message { get; set; }
+
+
+    private async Task SetCurrentView(string view)
+    {
+        CurrentView = view;
+        StateHasChanged();
+    }
 }

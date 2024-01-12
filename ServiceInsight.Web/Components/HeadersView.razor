@@ -1,0 +1,28 @@
+@using ServiceInsight.Web.Model
+@if (Message != null)
+{
+  <h3><i class="bi-list-columns-reverse"></i> Headers</h3>
+  <div class="table-responsive">
+    <table class="table table-bordered table-striped table-hover table-sm">
+      <thead>
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Value</th>
+      </tr>
+      </thead>
+      <tbody>
+      @foreach (var header in Message.Headers)
+      {
+        <tr>
+          <td>@header.Key</td>
+          <td>@header.Value</td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  </div>
+}
+@code {
+    [Parameter]
+    public MessageInfo Message { get; set; }
+}

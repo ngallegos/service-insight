@@ -6,15 +6,15 @@
 <EndpointSelector NavClasses="col-md-3 col-lg-2 d-md-block" EndPointSelected="@RefreshMessages"></EndpointSelector>
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-    <h1>@CurrentEndpoint</h1>
-    <Messages @ref="_messagesComponent"></Messages>
+    <h1>@(CurrentEndpoint?.Name)</h1>
+    <Messages @ref="_messagesComponent" OnMessageSelected="@MessageSelected"></Messages>
         <div class="container-fluid pt-3 mx-0 px-0" style="height: 49vh;">
             <div class="row" style="height: 90%;">
                 <div class="col-md-7 ms-sm-auto col-lg-9 px-md-4 border-1">
-                    <MessageExplorer></MessageExplorer>
+                <MessageExplorer Message="SelectedMessage"></MessageExplorer>
                 </div>
                 <div class="col-md-5 col-lg-3 d-md-block border-1">
-                    <MessageProperties></MessageProperties>
+                <MessageProperties Message="SelectedMessage"></MessageProperties>
                 </div>
             </div>
         </div>
@@ -22,19 +22,25 @@
 
 @code
 {
-    private string CurrentEndpoint = "";
+    private EndpointInfo CurrentEndpoint = null;
+    private MessageInfo SelectedMessage = null;
     private Messages _messagesComponent;
     private async Task RefreshMessages(EndpointInfo endpoint)
     {
-        if (CurrentEndpoint != endpoint.Name)
+        if (CurrentEndpoint?.Name != endpoint.Name)
         {
             await _messagesComponent.SearchMessages(endpoint.Name, endpoint);
-            CurrentEndpoint = endpoint.Name;
+            CurrentEndpoint = endpoint;
         }
         else
         {
             await _messagesComponent.SearchMessages(endpoint.Name);
             CurrentEndpoint = null;
         }
+    }
+    
+    private void MessageSelected(MessageInfo obj)
+    {
+        SelectedMessage = obj;
     }
 }

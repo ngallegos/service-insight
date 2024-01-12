@@ -1,44 +1,179 @@
-<h4>Message Properties</h4>
-<div>
+@using System.Text.Json
+@using ServiceInsight.Web.Model
+@if (Message != null)
+{
+  <h4>Message Properties</h4>
+  <div>
     <div class="table-responsive">
       <table class="table table-bordered table-striped table-hover table-sm">
-        @* <thead> *@
-        @*   <tr> *@
-        @*     <th scope="col">Status</th> *@
-        @*     <th scope="col">ID</th> *@
-        @*     <th scope="col">Type</th> *@
-        @*     <th scope="col">Time Sent</th> *@
-        @*     <th scope="col">Delivery Time</th> *@
-        @*     <th scope="col">Procesing Time</th> *@
-        @*     <th scope="col">Critical Time</th> *@
-        @*   </tr> *@
-        @* </thead> *@
         <tbody>
-            <tr>
-              <td>General</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>Performance</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>Errors</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>Gateway</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>Saga</td>
-              <td></td>
-            </tr>
+        <tr>
+          <td><i class="bi-caret-right-fill"></i>General</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <table class="table mb-0">
+              <tbody>
+              @foreach (var key in _generalPropKeys)
+              {
+                <tr>
+                  <td>&nbsp;&nbsp;@key.Replace("NServiceBus.", "")</td>
+                  <td>@Message.Headers.FirstOrDefault(x => x.Key == key)?.Value</td>
+                </tr>
+              }
+              <tr>
+                <td>&nbsp;&nbsp;HeaderContent</td>
+                <td>@JsonSerializer.Serialize(Message.Headers, new JsonSerializerOptions{ WriteIndented = true })</td>
+              </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td><i class="bi-caret-right-fill"></i>Performance</td>
+          <td></td>
+        </tr>
+        
+        <tr>
+          <td colspan="2">
+            <table class="table mb-0">
+              <tbody>
+              @foreach (var key in _perfPropKeys)
+              {
+                <tr>
+                  <td>&nbsp;&nbsp;@key.Replace("NServiceBus.", "")</td>
+                  <td>@Message.Headers.FirstOrDefault(x => x.Key == key)?.Value</td>
+                </tr>
+              }
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td><i class="bi-caret-right-fill"></i>Errors</td>
+          <td></td>
+        </tr>
+        
+        <tr>
+          <td colspan="2">
+            <table class="table mb-0">
+              <tbody>
+              @foreach (var key in _errPropKeys)
+              {
+                <tr>
+                  <td>&nbsp;&nbsp;@key.Replace("NServiceBus.", "")</td>
+                  @if (key.EndsWith("ExceptionInfo") && Message.Headers.Any(x => x.Key.Contains("ExceptionInfo")))
+                  {
+                    var ex = new
+                    {
+                      Message = Message.Headers.FirstOrDefault(x => x.Key.EndsWith("ExceptionInfo.Message"))?.Value,
+                      Source = Message.Headers.FirstOrDefault(x => x.Key.EndsWith("ExceptionInfo.Source"))?.Value,
+                      StackTrace = Message.Headers.FirstOrDefault(x => x.Key.EndsWith("ExceptionInfo.StackTrace"))?.Value
+                    };
+                    <td>@JsonSerializer.Serialize(ex, new JsonSerializerOptions{ WriteIndented = true })</td>
+                  }
+                  else
+                  {
+                      <td>@Message.Headers.FirstOrDefault(x => x.Key == key)?.Value</td>
+                  }
+                </tr>
+              }
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td><i class="bi-caret-right-fill"></i>Gateway</td>
+          <td></td>
+        </tr>
+        
+        <tr>
+          <td colspan="2">
+            <table class="table mb-0">
+              <tbody>
+              @foreach (var key in _gatePropKeys)
+              {
+                <tr>
+                  <td>&nbsp;&nbsp;@key.Replace("NServiceBus.", "")</td>
+                  <td>@Message.Headers.FirstOrDefault(x => x.Key == key)?.Value</td>
+                </tr>
+              }
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td><i class="bi-caret-right-fill"></i>Saga</td>
+          <td></td>
+        </tr>
+        
+        <tr>
+          <td colspan="2">
+            <table class="table mb-0">
+              <tbody>
+              @foreach (var key in _sagaPropKeys)
+              {
+                <tr>
+                  <td>&nbsp;&nbsp;@key.Replace("NServiceBus.", "")</td>
+                  <td>@Message.Headers.FirstOrDefault(x => x.Key == key)?.Value</td>
+                </tr>
+              }
+              </tbody>
+            </table>
+          </td>
+        </tr>
         </tbody>
       </table>
     </div>
-</div>
-
+  </div>
+}
 @code {
     
+  [Parameter]
+  public MessageInfo Message { get; set; }
+
+  private string[] _generalPropKeys = new[]
+  {
+    "NServiceBus.Version",
+    "NServiceBus.EnclosedMessageTypes",
+    "NServiceBus.MessageId",
+    "NServiceBus.RelatedTo",
+    "NServiceBus.ContentType",
+    "NServiceBus.IsDeferedMessage",
+    "NServiceBus.ConversationId",
+  };
+  
+  private string[] _perfPropKeys = new[]
+  {
+    "NServiceBus.TimeSent",
+    "NServiceBus.ProcessingStarted",
+    "NServiceBus.ProcessingEnded"
+  };
+  
+  private string[] _errPropKeys = new[]
+  {
+    "NServiceBus.ExceptionInfo",
+    "NServiceBus.FailedQ",
+    "NServiceBus.TimeOfFailure",
+  };
+  
+  private string[] _gatePropKeys = new[]
+  {
+    "NServiceBus.Gateway.From",
+    "NServiceBus.Gateway.To",
+    "NServiceBus.Gateway.DestinationSites",
+    "NServiceBus.Gateway.OriginatingSite",
+    "NServiceBus.Gateway.RoutTo"
+  };
+  
+  private string[] _sagaPropKeys = new[]
+  {
+    "NServiceBus.SagaType",
+    "NServiceBus.SagaDataType",
+    "NServiceBus.OriginatingSagaId",
+    "NServiceBus.OriginatingSagaType",
+    "NServiceBus.IsSagaTimeoutMessage",
+    "NServiceBus.SagaId"
+  };
 }

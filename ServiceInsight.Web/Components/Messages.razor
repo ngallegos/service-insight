@@ -1,5 +1,6 @@
 @using ServiceInsight.Web.Model
 @using ServiceInsight.Web.Services
+@using ServiceInsight.Web.Extensions
 
 
 <h1 class="@(searching ? "" : "d-none")">Searching</h1>
@@ -19,14 +20,38 @@
     <tbody>
       @foreach (var message in _messages)
       {
-        <tr>
-          <td>@message.Status</td>
+        <tr @onclick="() => MessageSelected(message)">
+          <td title="@message.Status">
+            @switch (message.Status)
+            {
+              case "successful":
+                <i class="bi-check-circle-fill text-success"></i> 
+                break;
+              case "retriedSuccess":
+                <i class="bi-check2-all text-success"></i> 
+                break;
+              case "retriedFailure":
+                <i class="bi-exclamation-lg text-danger"></i><i class="bi-exclamation-lg text-danger"></i>
+                break;
+              case "failed":
+                <i class="bi-x-circle-fill text-danger"></i> 
+                break;
+              case "archivedFailure":
+                <i class="bi-archive text-muted"></i> 
+                break;
+                
+              default:
+                <span>@message.Status</span>
+                break;
+            }
+          </td>
           <td>@message.MessageID</td>
           <td>@message.MessageType.Split('.').Last()</td>
-          <td>@message.TimeSent.ToOffset(userOffset)</td>
-          <td>@message.DeliveryTime</td>
-          <td>@message.ProcessingTime</td>
-          <td>@message.CriticalTime</td>
+          <td>@message.TimeSent.ToOffset(userOffset).ToString("M/d/yyyy h:mm:ss tt")</td>
+          <td>@message.DeliveryTime.Pretty()</td>
+          <td>@message.ProcessingTime.Pretty()</td>
+          <td>@message.CriticalTime.Pretty()</td>
+
         </tr>
       }
     </tbody>
@@ -44,6 +69,9 @@
   
   [Inject]
   private IJSRuntime _js { get; set; }
+  
+  [Parameter]
+  public EventCallback<MessageInfo> OnMessageSelected { get; set; }
 
   protected override async Task OnAfterRenderAsync(bool firstRender)
   {
@@ -67,5 +95,10 @@
       .ToList();
     searching = false;
     StateHasChanged();
+  }
+  
+  private async Task MessageSelected(MessageInfo message)
+  {
+    await OnMessageSelected.InvokeAsync(message);
   }
 }

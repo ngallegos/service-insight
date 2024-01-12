@@ -13,15 +13,19 @@ public interface IServiceControlClient
         string sort = "time_sent");
 
     Task<string> GetMessageBody(string bodyUrl);
+    Task<List<MessageInfo>> GetConversation(string conversationID);
+    Task<SagaDetail> GetSaga(string sagaID);
 }
 
 public class ServiceControlClient : IServiceControlClient
 {
     private readonly HttpClient _client;
+    public string Environment { get; }
 
-    public ServiceControlClient(HttpClient client)
+    public ServiceControlClient(HttpClient client, string environment)
     {
         _client = client;
+        Environment = environment;
     }
 
     public async Task<List<EndpointInfo>> GetMonitoredEndpoints()
@@ -44,6 +48,11 @@ public class ServiceControlClient : IServiceControlClient
             uri = $"endpoints/{endpoint}/" + uri;
         var messages = await _client.GetFromJsonAsync<List<MessageInfo>>(uri);
 
+        messages.ForEach(m =>
+        {
+            m.Environment = Environment;
+        });
+        
         return messages;
     }
 
@@ -51,11 +60,23 @@ public class ServiceControlClient : IServiceControlClient
     {
         return await _client.GetStringAsync(bodyUrl.TrimStart('/'));
     }
+    
+    public async Task<List<MessageInfo>> GetConversation(string conversationID)
+    {
+        var messages = await _client.GetFromJsonAsync<List<MessageInfo>>($"conversations/{conversationID}");
+        return messages;
+    }
+
+    public async Task<SagaDetail> GetSaga(string sagaID)
+    {
+        var saga = await _client.GetFromJsonAsync<SagaDetail>($"sagas/{sagaID}");
+        return saga;
+    }
 }
 
 public interface IServiceControlClientFactory
 {
-    IServiceControlClient GetClient(string endpointName);
+    IServiceControlClient GetClient(string environment);
     List<IServiceControlClient> GetAllClients();
 }
 
@@ -71,23 +92,23 @@ public class ServiceControlClientFactory : IServiceControlClientFactory
         _httpClientFactory = httpClientFactory;
     }
 
-    public IServiceControlClient GetClient(string endpointName)
+    public IServiceControlClient GetClient(string environment)
     {
-        var endpoint = GetInstance(endpointName);
+        var endpoint = GetInstance(environment);
 
-        var client = _httpClientFactory.CreateClient($"service-control-{endpointName}");
+        var client = _httpClientFactory.CreateClient($"service-control-{environment}");
         client.BaseAddress = new Uri(endpoint.ApiUrl);
 
-        return new ServiceControlClient(client);
+        return new ServiceControlClient(client, environment);
     }
 
     public List<IServiceControlClient> GetAllClients()
     {
-        return _configuration.Instances.Select(x => x.Name).Select(GetClient).ToList();
+        return _configuration.Environments.Select(x => x.Name).Select(GetClient).ToList();
     }
 
-    private ServiceControlInstance GetInstance(string endpointName)
+    private ServiceControlEnvironment GetInstance(string endpointName)
     {
-        return _configuration.Instances.FirstOrDefault(x => string.Equals(x.Name, endpointName, StringComparison.CurrentCultureIgnoreCase));
+        return _configuration.Environments.FirstOrDefault(x => string.Equals(x.Name, endpointName, StringComparison.CurrentCultureIgnoreCase));
     }
 }

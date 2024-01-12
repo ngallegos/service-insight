@@ -1,0 +1,31 @@
+@using System.Text.Json
+@using System.Web
+@using ServiceInsight.Web.Model
+@using ServiceInsight.Web.Services
+<h3><i class="bi-code-slash"></i> Body</h3>
+<pre>
+    @Body
+</pre>
+@code {
+    
+    [Inject]
+    private IServiceControlClientFactory _clientFactory { get; set; }
+    
+    [Parameter]
+    public MessageInfo Message { get; set; }
+
+    private string Body = null;
+    private string _currentMessageID;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_currentMessageID != Message?.MessageID)
+        {
+            _currentMessageID = Message.MessageID;
+            var client = _clientFactory.GetClient(Message.Environment);
+            var rawBody = await client.GetMessageBody(Message.BodyUrl);
+            var json = JsonSerializer.Deserialize<object>(HttpUtility.HtmlDecode(rawBody));
+            Body = JsonSerializer.Serialize(json, new JsonSerializerOptions { WriteIndented = true });
+        }
+    }
+}

@@ -2,10 +2,10 @@ namespace ServiceInsight.Web.Model;
 
 public class ServiceControlConfiguration
 {
-    public List<ServiceControlInstance> Instances { get; set; } = new List<ServiceControlInstance>();
+    public List<ServiceControlEnvironment> Environments { get; set; } = new List<ServiceControlEnvironment>();
 }
 
-public class ServiceControlInstance
+public class ServiceControlEnvironment
 {
     public string Name { get; set; }
     public string ApiUrl { get; set; }
