@@ -4,11 +4,12 @@
 
 
 <div class="row">
-  <div class="col-sm-8"><span class="@(searching ? "" : "d-none")">Searching @searchMessage</span></div>
+  <div class="col-sm-6">todo- pagination here</div>
+  <div class="col-sm-2"><span class="@(searching ? "" : "d-none")">Searching @searchMessage</span></div>
   <div class="col-sm-4">
     <div class="input-group">
       <input type="text" class="form-control" placeholder="search..." @bind="SearchQuery"
-             @oninput="@((e) => SearchQuery=(string)e.Value)"/>
+             @onkeyup="@(async e => { if (e.Code == "Enter") await Search(); })"/>
       <div class="input-group-append">
         <button class="btn btn-outline-secondary" type="button" @onclick="Search"><i class="bi bi-search"></i></button>
       </div>
