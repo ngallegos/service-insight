@@ -14,12 +14,15 @@
     [Parameter]
     public MessageInfo Message { get; set; }
 
+    [Parameter]
+    public bool IsVisible { get; set; }
+    
     private string Body = null;
     private string _currentMessageID;
     
     protected override async Task OnParametersSetAsync()
     {
-        if (_currentMessageID != Message?.MessageID)
+        if (_currentMessageID != Message?.MessageID && IsVisible)
         {
             _currentMessageID = Message.MessageID;
             var client = _clientFactory.GetClient(Message.Environment);

@@ -8,7 +8,9 @@ public class MessageBase
     [JsonPropertyName("message_id")]
     public string MessageID { get; set; }
     [JsonPropertyName("message_type")]
-    public string MessageType { get; set; }
+    public string MessageTypeFullyQualified { get; set; }
+    [JsonIgnore] 
+    public string MessageType => MessageTypeFullyQualified?.Split('.').Last();
     [JsonPropertyName("time_sent")]
     public DateTimeOffset TimeSent { get; set; }
     

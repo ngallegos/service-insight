@@ -1,25 +1,6 @@
 @using ServiceInsight.Web.Model
 @if (Message != null)
 {
-    <div class="container-fluid" style="height: 100%;">
-        @switch (CurrentView)
-        {
-            case "flow":
-                break;
-            case "saga":
-                break;
-            case "sequence":
-                break;
-            case "headers":
-                <HeadersView Message="Message"></HeadersView>
-                break;
-            case "body":
-                <BodyView Message="Message" @ref="_bodyView"></BodyView>
-                break;
-            case "logs":
-                break;
-        }
-    </div>
     <ul class="nav nav-pills" style="height: 5%;">
         <li class="nav-item" @onclick="@(() => SetCurrentView("flow"))">
             <a class="nav-link @(CurrentView == "flow" ? "active" : "")" aria-current="page" href="#"><i class="bi-diagram-2"></i> Flow Diagram</a>
@@ -40,11 +21,31 @@
             <a class="nav-link @(CurrentView == "logs" ? "active" : "")" href="#"><i class="bi-book"></i> Logs</a>
         </li>
     </ul>
+    <div class="container-fluid" style="height: 100%;">
+        <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "flow" ? "" : "d-none")">
+            <FlowView Message="Message" IsVisible="@(CurrentView == "flow")"></FlowView>
+        </div>
+        <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "saga" ? "" : "d-none")">
+            TODO - Not sure how to render yet
+        </div>
+        <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "sequence" ? "" : "d-none")">
+            TODO - Not sure how to render yet
+        </div>
+        <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "headers" ? "" : "d-none")">
+            <HeadersView Message="Message"></HeadersView>
+        </div>
+        <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "body" ? "" : "d-none")">
+            <BodyView Message="Message" IsVisible="@(CurrentView == "body")"></BodyView>
+        </div>
+        <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "logs" ? "" : "d-none")">
+            TODO - Not sure how to pull these yet
+        </div>
+    </div>
 }
 @code {
 
     private BodyView _bodyView;
-    private string CurrentView = "body";
+    private string CurrentView = "flow";
 
     [Parameter]
     public MessageInfo Message { get; set; }

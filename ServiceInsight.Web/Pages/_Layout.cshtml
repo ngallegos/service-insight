@@ -28,9 +28,23 @@
 </div>
 
 <script src="_framework/blazor.server.js"></script>
+<script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    window.mermaid = mermaid;
+    mermaid.initialize({ startOnLoad: false });
+</script>
 <script>
     function GetTimeZoneValue(){
         return new Date().getTimezoneOffset();
+    }
+    
+    function ReRenderGraph(id, graphInfo) {
+        var elem = document.getElementById(id);
+        if (!elem)
+            return;
+        elem.removeAttribute("data-processed");
+        elem.innerHTML = graphInfo;
+        mermaid.run({ querySelector: `#${id}` });
     }
 </script>
 </body>

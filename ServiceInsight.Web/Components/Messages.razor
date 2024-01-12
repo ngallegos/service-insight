@@ -46,7 +46,7 @@
             }
           </td>
           <td>@message.MessageID</td>
-          <td>@message.MessageType.Split('.').Last()</td>
+          <td>@message.MessageType</td>
           <td>@message.TimeSent.ToOffset(userOffset).ToString("M/d/yyyy h:mm:ss tt")</td>
           <td>@message.DeliveryTime.Pretty()</td>
           <td>@message.ProcessingTime.Pretty()</td>

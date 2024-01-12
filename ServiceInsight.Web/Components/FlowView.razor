@@ -1,0 +1,61 @@
+@using ServiceInsight.Web.Model
+@using ServiceInsight.Web.Services
+<h3><i class="bi-diagram-2"></i> Flow Diagram</h3>
+<div id="flow-graph">
+</div>
+@code {
+    
+    [Inject]
+    private IServiceControlClientFactory _clientFactory { get; set; }
+    
+    [Inject]
+    private IJSRuntime _js { get; set; }
+    
+    [Parameter]
+    public MessageInfo Message { get; set; }
+    
+    [Parameter]
+    public bool IsVisible { get; set; }
+    
+    
+    private string _currentMessageID;
+    
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_currentMessageID != Message?.MessageID && IsVisible)
+        {
+            _currentMessageID = Message.MessageID;
+            var client = _clientFactory.GetClient(Message.Environment);
+            var conversation = await client.GetConversation(Message.ConversationID);
+            var chartDef = "flowchart TD\n";
+            var relations = new List<string>();
+            foreach (var msg in conversation)
+            {
+                chartDef += $"\t{msg.MessageType}\n";
+                var relatedToMessageID = msg.Headers.FirstOrDefault(x => x.Key == "NServiceBus.RelatedTo")?.Value;
+                if (!string.IsNullOrEmpty(relatedToMessageID))
+                {
+                    var ogMessage = conversation.FirstOrDefault(m => m.MessageID == relatedToMessageID);
+                    if (ogMessage != null)
+                    {
+                        relations.Add($"{ogMessage.MessageType } --> {msg.MessageType}");
+                    }
+                }
+            }
+            foreach (var relation in relations)
+            {
+                chartDef += $"\t{relation}\n";
+            }
+            await _js.InvokeVoidAsync("ReRenderGraph", "flow-graph", chartDef);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // if (!firstRender)
+        // {
+        //     await _js.InvokeVoidAsync("ReRenderGraph", "flow-graph");
+        // }
+    }
+
+}
