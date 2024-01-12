@@ -1,6 +1,5 @@
 # Service Insight Web
-This is a Blazor app that can be used in place of the windows-only Particular.net implementation for those with mac or linux machines.
-
+This is a Blazor app that can be used in place of the [windows-only Particular.net NServiceBus visualization tool](https://particular.net/serviceinsight) for those with mac or linux machines.
 
 The api endpoints used were discovered by the doing a GET on a running service control instance's root (`http://{your-service-control-domain}:{your-service-control-port}/api/`), which returns a payload with many of the api endpoints used by service insight, and by referencing the official [service insight source code](https://github.com/Particular/ServiceInsight).
 
