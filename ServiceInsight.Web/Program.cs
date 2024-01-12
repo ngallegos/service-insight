@@ -11,6 +11,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IServiceControlClientFactory, ServiceControlClientFactory>();
+builder.WebHost.UseWebRoot("wwwroot").UseStaticWebAssets();
 
 var app = builder.Build();
 
@@ -22,14 +23,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllers();
 app.MapBlazorHub();

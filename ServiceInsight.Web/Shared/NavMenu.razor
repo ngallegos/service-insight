@@ -1,40 +1,57 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">ServiceInsight.Web</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
-
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="oi oi-plus" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
-            </NavLink>
-        </div>
-    </nav>
-</div>
+﻿@using ServiceInsight.Web.Model
+@using ServiceInsight.Web.Services
+<nav id="sidebarMenu" class="@NavClasses bg-dark sidebar @NavMenuCssClass">
+  <div class="position-sticky pt-3 sidebar-sticky">
+      @foreach (var env in _endpoints
+        .OrderBy(x => x.Key))
+      {
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+          <span>@env.Key</span>
+          <a class="link-secondary" href="#" aria-label="@env.Key">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus-circle align-text-bottom" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          </a>
+        </h6>
+        
+        <ul class="nav flex-column">
+          @foreach (var endpoint in env.Value)
+          {
+            <li class="nav-item">
+              <a class="nav-link active" aria-current="page" href="#">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-home align-text-bottom" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                @endpoint.Name
+              </a>
+            </li>
+          }
+        </ul>
+      }
+  </div>
+</nav>
 
 @code {
-    private bool collapseNavMenu = true;
+  private bool collapseNavMenu = true;
+  private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+  private Dictionary<string, List<EndpointInfo>> _endpoints = new();
+  
+  [Parameter]
+  public string NavClasses { get; set; }
 
-    private void ToggleNavMenu()
+  [Inject]
+  private IServiceControlClientFactory _clientFactory { get; set; }
+  
+  protected override async Task OnInitializedAsync()
+  {
+    var clients = _clientFactory.GetAllClients();
+    var endpointTasks = clients.Select(e => e.GetMonitoredEndpoints());
+    var allEndpoints = await Task.WhenAll(endpointTasks);
+
+    _endpoints = allEndpoints.SelectMany(x => x)
+      .GroupBy(x => x.Name)
+      .ToDictionary(x => x.Key, x => x.ToList());
+  }
+
+  private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
-
 }

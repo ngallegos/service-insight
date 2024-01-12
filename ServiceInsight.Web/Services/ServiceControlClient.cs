@@ -56,6 +56,7 @@ public class ServiceControlClient : IServiceControlClient
 public interface IServiceControlClientFactory
 {
     IServiceControlClient GetClient(string endpointName);
+    List<IServiceControlClient> GetAllClients();
 }
 
 public class ServiceControlClientFactory : IServiceControlClientFactory
@@ -78,6 +79,11 @@ public class ServiceControlClientFactory : IServiceControlClientFactory
         client.BaseAddress = new Uri(endpoint.ApiUrl);
 
         return new ServiceControlClient(client);
+    }
+
+    public List<IServiceControlClient> GetAllClients()
+    {
+        return _configuration.Instances.Select(x => x.Name).Select(GetClient).ToList();
     }
 
     private ServiceControlInstance GetInstance(string endpointName)
