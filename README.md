@@ -27,3 +27,20 @@ It could benefit from some better styling for usability. For example:
 * The message explorer pane doesn't restrict itself to the window size and viewing headers in particular makes you scroll the whole page instead of just the pane its supposed to show up in.
 
 In spite of these limitations, the current state of the app has made it more than sufficient for my use cases while diagnosing and inspecting messages on a non-windows machine
+
+### Credits
+Lead Developer - Nicholas Gallegos
+
+[Particular Software](https://particular.net/) for creating the original [Service Insight](https://particular.net/serviceinsight) tool, for making the [service insight source code](https://github.com/Particular/ServiceInsight) available for reference, and for generally making excellent products.
+
+### License
+
+The MIT License (MIT)
+
+Copyright (c) 2023 Nicholas Gallegos
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
