@@ -27,7 +27,8 @@
     private Messages _messagesComponent;
     private async Task RefreshMessages(EndpointInfo endpoint)
     {
-        if (CurrentEndpoint?.Name != endpoint.Name)
+        SelectedMessage = null;
+        if (!string.IsNullOrEmpty(endpoint?.Name))
         {
             await _messagesComponent.SearchMessages(endpoint.Environment, endpoint);
             CurrentEndpoint = endpoint;
