@@ -28,6 +28,7 @@
 </div>
 
 <script src="_framework/blazor.server.js"></script>
+<script src="https://d3js.org/d3.v6.min.js"></script>
 <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
     window.mermaid = mermaid;
@@ -44,7 +45,16 @@
             return;
         elem.removeAttribute("data-processed");
         elem.innerHTML = graphInfo;
-        mermaid.run({ querySelector: `#${id}` });
+        mermaid.run({ querySelector: `#${id}`, postRenderCallback: (svgID) => {
+            let svg = d3.select(`#${svgID}`);                            
+            svg.html("<g>" + svg.html() + "</g>");
+            let inner = svg.select("g");            
+            let zoom = d3.zoom().on("zoom", function(event) {
+              inner.attr("transform", event.transform);
+              svg.attr('style', 'max-width: 100%;');
+            });
+            svg.call(zoom);
+        } });       
     }
 </script>
 </body>
