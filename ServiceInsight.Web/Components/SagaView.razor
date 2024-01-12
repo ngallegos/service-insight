@@ -1,6 +1,13 @@
 @using ServiceInsight.Web.Model
 @using ServiceInsight.Web.Services
+@using ServiceInsight.Web.Extensions
+@using Newtonsoft.Json.Linq
+@using Newtonsoft.Json
 <h3><i class="bi-shuffle"></i> Saga</h3>
+@if (SagaExists != null && !SagaExists.Value)
+{
+    <p>No saga available for selected message</p>
+}
 <div id="saga-graph">
 </div>
 @code {
@@ -16,8 +23,8 @@
     
     [Parameter]
     public bool IsVisible { get; set; }
-    
-    
+    private bool? SagaExists { get; set; }
+
     private string _currentMessageID;
     
     protected override async Task OnParametersSetAsync()
@@ -29,29 +36,63 @@
              var sagaInfo = Message.OriginatesFromSaga ?? Message.InvokedSagas.FirstOrDefault();
              if (sagaInfo != null)
              {
-                 var sagaDetail = await client.GetSaga(sagaInfo.SagaID);
-                 var chartDef = "flowchart TD\n";
-                 var relations = new List<string>();
-                 foreach (var change in sagaDetail.Changes)
+                 SagaExists = true;
+                 var gettingConversation = client.GetConversation(Message.ConversationID);
+                 var gettingSaga = client.GetSaga(sagaInfo.SagaID);
+                 var conversation = await gettingConversation;
+                 var sagaDetail = await gettingSaga;
+                 var diagram = "%%{init: { \"sequence\": { " +
+                               "\"wrap\": false, " +
+                               "\"messageAlign\": \"left\",  " +
+                               "\"noteAlign\": \"left\",  " +
+                               "\"rightAngles\": true, " +
+                               "\"mirrorActors\": false } } }%%" +
+                               "\nsequenceDiagram\n" +
+                               "\tparticipant SAGA_INVOKED\n" +
+                               "\tparticipant HANDLED\n";
+                 JObject previousState = null;
+                 foreach (var change in sagaDetail.Changes.OrderBy(x => x.StartTime))
                  {
-                     // chartDef += $"\t{msg.MessageType}\n";
-                     // var relatedToMessageID = msg.Headers.FirstOrDefault(x => x.Key == "NServiceBus.RelatedTo")?.Value;
-                     // if (!string.IsNullOrEmpty(relatedToMessageID))
-                     // {
-                     //     var ogMessage = sagaDetail.FirstOrDefault(m => m.MessageID == relatedToMessageID);
-                     //     if (ogMessage != null)
-                     //     {
-                     //         relations.Add($"{ogMessage.MessageType} --> {msg.MessageType}");
-                     //     }
-                     // }
+                     diagram += $"\tNote left of SAGA_INVOKED: {change.InitiatingMessage.MessageType}\n";
+                     diagram += $"\tSAGA_INVOKED->HANDLED: Saga {change.Status.FirstCharToUpper()}\n";
+                     
+                     
+                     var newState = JsonConvert.DeserializeObject<JObject>(change.StateAfterChange);
+                     var changedProperties = new List<string>();
+                     foreach (var prop in newState)
+                     {
+                         if (previousState != null && prop.Value.ToString() != previousState[prop.Key].ToString())
+                             changedProperties.Add($"{prop.Key}: {previousState[prop.Key] ?? "null"} -> {prop.Value}");
+                         else if (previousState == null)
+                             changedProperties.Add($"{prop.Key}: {prop.Value}");
+                     }
+                     
+                     if (changedProperties.Any())
+                     {
+                         var note = string.Join("<br/>", changedProperties);
+                         diagram += $"\tNote over SAGA_INVOKED,HANDLED: {note}\n";
+                     }
+                     previousState = newState;
+                     if (change.OutgoingMessages.Any())
+                     {
+                         var changeMessage = conversation.FirstOrDefault(x => x.MessageID == change.InitiatingMessage.MessageID);
+                         var outgoingMessages = conversation
+                             .Where(x =>
+                             {
+                                 var relatedToMessageID = x.Headers.FirstOrDefault(h => h.Key == "NServiceBus.RelatedTo")?.Value;
+                                 return changeMessage?.MessageID == relatedToMessageID && x.MessageID != changeMessage?.MessageID;
+                             })
+                             .Select(x => $"{x.Intent.FirstCharToUpper()} {x.MessageType}")
+                             .Distinct().ToList();
+                         var outgoing = string.Join("<br/>", outgoingMessages);
+                         diagram += $"\tNote right of HANDLED: {outgoing}\n";
+                     }
                  }
-                 // foreach (var relation in relations)
-                 // {
-                 //     chartDef += $"\t{relation}\n";
-                 // }
-                 // await _js.InvokeVoidAsync("ReRenderGraph", "saga-graph", chartDef);
+                 await _js.InvokeVoidAsync("ReRenderGraph", "saga-graph", diagram);
              }
          }
+         else
+             SagaExists = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

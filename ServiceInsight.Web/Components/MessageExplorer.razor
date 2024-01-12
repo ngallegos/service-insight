@@ -17,9 +17,6 @@
         <li class="nav-item" @onclick="@(() => SetCurrentView("body"))">
             <a class="nav-link @(CurrentView == "body" ? "active" : "")" href="#"><i class="bi-code-slash"></i> Body</a>
         </li>
-        <li class="nav-item" @onclick="@(() => SetCurrentView("logs"))">
-            <a class="nav-link @(CurrentView == "logs" ? "active" : "")" href="#"><i class="bi-book"></i> Logs</a>
-        </li>
     </ul>
     <div class="container-fluid vertical-scroll" style="height: 95%;">
         <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "flow" ? "" : "d-none")">
@@ -36,9 +33,6 @@
         </div>
         <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "body" ? "" : "d-none")">
             <BodyView Message="Message" IsVisible="@(CurrentView == "body")"></BodyView>
-        </div>
-        <div class="container-fluid mx-0 px-0 pt-4 @(CurrentView == "logs" ? "" : "d-none")">
-            TODO - Not sure how to pull these yet
         </div>
     </div>
 }
