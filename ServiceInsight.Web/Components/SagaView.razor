@@ -37,6 +37,7 @@
              if (sagaInfo != null)
              {
                  SagaExists = true;
+                 var excludedSagaPropertyKeys = new[] { "Id", "Originator", "OriginalMessageId", "$type" };
                  var gettingConversation = client.GetConversation(Message.ConversationID);
                  var gettingSaga = client.GetSaga(sagaInfo.SagaID);
                  var conversation = await gettingConversation;
@@ -63,10 +64,9 @@
                      {
                          if (previousState != null && prop.Value.ToString() != previousState[prop.Key].ToString())
                              changedProperties.Add($"{prop.Key}: {previousState[prop.Key] ?? "null"} -> {prop.Value}");
-                         else if (previousState == null)
+                         else if (previousState == null && !excludedSagaPropertyKeys.Contains(prop.Key))
                              changedProperties.Add($"{prop.Key}: {prop.Value}");
                      }
-                     
                      if (changedProperties.Any())
                      {
                          var note = string.Join("<br/>", changedProperties);
@@ -80,12 +80,17 @@
                              .Where(x =>
                              {
                                  var relatedToMessageID = x.Headers.FirstOrDefault(h => h.Key == "NServiceBus.RelatedTo")?.Value;
-                                 return changeMessage?.MessageID == relatedToMessageID && x.MessageID != changeMessage?.MessageID;
+                                 return !string.IsNullOrEmpty(relatedToMessageID) 
+                                        && changeMessage?.MessageID == relatedToMessageID 
+                                        && x.MessageID != changeMessage?.MessageID;
                              })
                              .Select(x => $"{x.Intent.FirstCharToUpper()} {x.MessageType}")
                              .Distinct().ToList();
-                         var outgoing = string.Join("<br/>", outgoingMessages);
-                         diagram += $"\tNote right of HANDLED: {outgoing}\n";
+                         if (outgoingMessages.Any())
+                         {
+                             var outgoing = string.Join("<br/>", outgoingMessages);
+                             diagram += $"\tNote right of HANDLED: {outgoing}\n";
+                         }
                      }
                  }
                  await _js.InvokeVoidAsync("ReRenderGraph", "saga-graph", diagram);
@@ -94,13 +99,4 @@
          else
              SagaExists = false;
     }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        // if (!firstRender)
-        // {
-        //     await _js.InvokeVoidAsync("ReRenderGraph", "flow-graph");
-        // }
-    }
-
 }
