@@ -18,6 +18,8 @@ public class EndpointInfo
     public HeartbeatInfo HeartbeatInfo { get; set; }
     [JsonPropertyName("is_sending_heartbeats")]
     public bool IsSendingHeartbeats { get; set; }
+    [JsonIgnore]
+    public string Environment { get; set; }
 }
 
 public class HeartbeatInfo

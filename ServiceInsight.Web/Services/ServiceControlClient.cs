@@ -30,8 +30,15 @@ public class ServiceControlClient : IServiceControlClient
 
     public async Task<List<EndpointInfo>> GetMonitoredEndpoints()
     {
-        var endpoints = await _client.GetFromJsonAsync<List<EndpointInfo>>("endpoints");
-        return endpoints.Where(x => x.Monitored).ToList();
+        var endpoints = (await _client.GetFromJsonAsync<List<EndpointInfo>>("endpoints"))
+            .Where(x => x.Monitored).ToList();
+
+        endpoints.ForEach(e =>
+        {
+            e.Environment = Environment;
+        });
+        
+        return endpoints;
     }
     
     public async Task<List<MessageInfo>> SearchMessages(string keyword = null, string endpoint = null, 

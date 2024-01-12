@@ -3,7 +3,7 @@
 
 <PageTitle>Index</PageTitle>
 
-<EndpointSelector NavClasses="col-md-3 col-lg-2 d-md-block" EndPointSelected="@RefreshMessages"></EndpointSelector>
+<EndpointSelector NavClasses="col-md-3 col-lg-2 d-md-block" EndpointSelected="@RefreshMessages"></EndpointSelector>
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
     <h1>@(CurrentEndpoint?.Name)</h1>
@@ -29,12 +29,12 @@
     {
         if (CurrentEndpoint?.Name != endpoint.Name)
         {
-            await _messagesComponent.SearchMessages(endpoint.Name, endpoint);
+            await _messagesComponent.SearchMessages(endpoint.Environment, endpoint);
             CurrentEndpoint = endpoint;
         }
         else
         {
-            await _messagesComponent.SearchMessages(endpoint.Name);
+            await _messagesComponent.SearchMessages(endpoint.Environment);
             CurrentEndpoint = null;
         }
     }
