@@ -3,7 +3,18 @@
 @using ServiceInsight.Web.Extensions
 
 
-<h1 class="@(searching ? "" : "d-none")">Searching</h1>
+<div class="row">
+  <div class="col-sm-8"><span class="@(searching ? "" : "d-none")">Searching @searchMessage</span></div>
+  <div class="col-sm-4">
+    <div class="input-group">
+      <input type="text" class="form-control" placeholder="search..." @bind="SearchQuery"
+             @oninput="@((e) => SearchQuery=(string)e.Value)"/>
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" @onclick="Search"><i class="bi bi-search"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="table-responsive @(searching ? "d-none" : "")" style="height: 50vh">
   <table class="table table-bordered table-striped table-hover table-sm">
     <thead>
@@ -61,8 +72,14 @@
 @code {
 
   private bool searching = false;
+  private string searchMessage = "";
   private List<MessageInfo> _messages = new List<MessageInfo>();
   private TimeSpan userOffset;
+  private string _currentEnvironment;
+  private EndpointInfo _currentEndpoint;
+  
+
+  private string SearchQuery { get; set; }
   
   [Inject]
   private IServiceControlClientFactory _clientFactory { get; set; }
@@ -81,14 +98,26 @@
       userOffset = TimeSpan.FromMinutes(-timeDiff);
     }
   }
+  private async Task Search()
+  {
+    if (!string.IsNullOrEmpty(SearchQuery))
+    {
+      searchMessage = $"messages with \"{SearchQuery}\"";
+      await SearchMessages(_currentEnvironment, _currentEndpoint, SearchQuery);
+      searchMessage = "";
+    }
+  }
 
-  public async Task SearchMessages(string environment, EndpointInfo endpoint = null)
+  public async Task SearchMessages(string environment, EndpointInfo endpoint = null, string searchQuery = null)
   {
     searching = true;
+    _currentEnvironment = environment;
+    _currentEndpoint = endpoint;
+    await MessageSelected(null);
     StateHasChanged();
     var clients = new List<IServiceControlClient> { _clientFactory.GetClient(environment) };
 
-    var messageTasks = clients.Select(x => x.SearchMessages(endpoint: endpoint?.Name));
+    var messageTasks = clients.Select(x => x.SearchMessages(keyword: searchQuery, endpoint: endpoint?.Name));
 
     _messages = (await Task.WhenAll(messageTasks)).SelectMany(x => x)
       .OrderByDescending(x => x.TimeSent)
